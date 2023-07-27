@@ -51,7 +51,7 @@ class EloquentTest extends TestCase
         $response->assertStatus(404);
 
         $user = User::factory()->create();
-        $response = $this->get('users/1');
+        $response = $this->get("users/{$user->id}");
         $response->assertStatus(200);
         $response->assertViewHas('user', $user);
     }
@@ -109,14 +109,20 @@ class EloquentTest extends TestCase
 
     public function test_mass_delete_users()
     {
-        User::factory(4)->create();
+
+        $usersToDelete = User::factory(4)->create();
+
         $this->assertDatabaseCount('users', 4);
 
         $response = $this->delete('users', [
-            'users' => [1, 2, 3]
+            'users' => $usersToDelete->pluck('id')->toArray()
         ]);
         $response->assertRedirect();
-        $this->assertDatabaseCount('users', 1);
+
+        // Verify that the specific users with IDs 1, 2, and 3 have been deleted
+        foreach ($usersToDelete as $user) {
+            $this->assertDatabaseMissing('users', ['id' => $user->id]);
+        }
     }
 
     public function test_soft_delete_projects()

@@ -44,19 +44,11 @@ class UserController extends Controller
         // TASK: find a user by $name and update it with $email
         //   if not found, create a user with $name, $email and random password
         $user = NULL; // updated or created user
-        $user = User::where('name', $name)->firstOrNew([
-            'email' => $email,
-        ]);
-        if (!$user->exists) {
-            $user->password = Str::random(8);
-        } else {
-            $user->email = $email;
-            $user->save();
-        }
-//        $user = User::updateOrCreate(['name' => $name], ['email' => $email, 'password' => 'random password']);
+        $user = User::updateOrCreate(['name' => $name], ['email' => $email, 'password' => 'random password']);
 
         return view('users.show', compact('user'));
     }
+
     public function destroy(Request $request)
     {
         // TASK: delete multiple users by their IDs
@@ -65,6 +57,7 @@ class UserController extends Controller
 
         // Insert Eloquent statement here
         User::whereIn('id', $request->users)->delete();
+//        User::destroy($request->users);
 
         return redirect('/')->with('success', 'Users deleted');
     }
